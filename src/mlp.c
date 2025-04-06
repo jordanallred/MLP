@@ -6,11 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-MLP * create_mlp (int              num_layers,
-                  int *            layer_sizes,
-                  ActivationType * activation_types,
-                  double           learning_rate,
-                  double           lambda)
+MLP * create_mlp (int            num_layers,
+                  int *          layer_sizes,
+                  activation_t * activation_types,
+                  double         learning_rate,
+                  double         lambda)
 {
     if (num_layers <= 0)
     {
@@ -47,13 +47,13 @@ MLP * create_mlp (int              num_layers,
     MLP * p_mlp = calloc(1, sizeof(MLP));
 
     p_mlp->num_layers    = num_layers - 1;
-    p_mlp->layers        = calloc(num_layers, sizeof(Layer *));
+    p_mlp->layers        = calloc(num_layers, sizeof(layer_t *));
     p_mlp->learning_rate = learning_rate;
     p_mlp->lambda        = lambda;
 
     for (int index = 0; index < p_mlp->num_layers; index++)
     {
-        p_mlp->layers[index]              = calloc(num_layers, sizeof(Layer));
+        p_mlp->layers[index]              = calloc(num_layers, sizeof(layer_t));
         p_mlp->layers[index]->input_size  = layer_sizes[index];
         p_mlp->layers[index]->output_size = layer_sizes[index + 1];
         p_mlp->layers[index]->activation_type = activation_types[index];
@@ -63,7 +63,7 @@ MLP * create_mlp (int              num_layers,
                                 p_mlp->layers[index]->input_size);
         p_mlp->layers[index]->biases
             = calloc(p_mlp->layers[index]->output_size, sizeof(double));
-        p_mlp->layers[index]->z
+        p_mlp->layers[index]->pre_activation
             = calloc(p_mlp->layers[index]->output_size, sizeof(double));
         p_mlp->layers[index]->activations
             = calloc(p_mlp->layers[index]->output_size, sizeof(double));
@@ -90,7 +90,7 @@ void initialize_weights (MLP * p_mlp)
 
     for (int index = 0; index < p_mlp->num_layers; index++)
     {
-        Layer *   p_layer = p_mlp->layers[index];
+        layer_t * p_layer = p_mlp->layers[index];
         double ** pp_weights[p_layer->input_size][p_layer->output_size];
         size_t    num_read = fread(
             &pp_weights, p_layer->input_size, p_layer->output_size, p_file);
@@ -116,7 +116,7 @@ void free_mlp (MLP * p_mlp)
 {
     for (int index = 0; index < p_mlp->num_layers; index++)
     {
-        Layer * p_layer = p_mlp->layers[index];
+        layer_t * p_layer = p_mlp->layers[index];
 
         for (int row = 0; row < p_layer->output_size; row++)
         {
@@ -125,7 +125,7 @@ void free_mlp (MLP * p_mlp)
         free(p_layer->weights);
 
         free(p_layer->biases);
-        free(p_layer->z);
+        free(p_layer->pre_activation);
         free(p_layer->activations);
         free(p_layer->delta);
         free(p_layer);

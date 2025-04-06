@@ -1,7 +1,3 @@
-//
-// Created by jo on 4/6/25.
-//
-
 #ifndef LOSS_H
 #define LOSS_H
 
