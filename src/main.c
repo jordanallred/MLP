@@ -9,9 +9,9 @@ int main (void)
     double       learning_rate      = 0.01;
     double       lambda             = 5.0;
 
-    MLP * p_mlp = create_mlp(
+    mlp_t * p_mlp = mlp_create(
         num_layers, layer_sizes, activation_types, learning_rate, lambda);
-    free_mlp(p_mlp);
+    mlp_free(p_mlp);
 
     return 0;
 }

@@ -14,44 +14,39 @@ typedef struct
 {
     int          input_size;
     int          output_size;
-    double **    weights;
-    double *     biases;
-    double *     pre_activation;
-    double *     activations;
-    double *     delta;
+    double **    pp_weights;
+    double *     p_biases;
+    double *     p_pre_activation;
+    double *     p_activations;
+    double *     p_delta;
     activation_t activation_type;
 } layer_t;
 
 typedef struct
 {
     int        num_layers;
-    layer_t ** layers;
+    layer_t ** pp_layers;
     double     learning_rate;
     double     lambda;
-    double *   input_data;
-    double *   output_data;
-} MLP;
+    double *   p_input_data;
+    double *   p_output_data;
+} mlp_t;
 
 // Function prototypes
-MLP *    create_mlp (int            num_layers,
-                     int *          layer_sizes,
-                     activation_t * activation_types,
+mlp_t *  mlp_create (int            num_layers,
+                     int *          p_layer_sizes,
+                     activation_t * p_activation_types,
                      double         learning_rate,
                      double         lambda);
-void     free_mlp (MLP * p_mlp);
-void     initialize_weights (MLP * p_mlp);
-void     forward_propagation (MLP * p_mlp, double * input);
-double   compute_loss (MLP * p_mlp, double * target);
-void     backward_propagation (MLP * p_mlp, double * target);
-void     update_parameters (MLP * p_mlp);
-void     train_mlp (MLP *     mlp,
-                    double ** inputs,
-                    double ** targets,
+void     mlp_free (mlp_t * p_mlp);
+void     mlp_train (mlp_t *   p_mlp,
+                    double ** pp_inputs,
+                    double ** pp_targets,
                     int       num_samples,
                     int       num_epochs,
                     int       batch_size);
-double * predict (MLP * p_mlp, double * input);
-void     save_mlp (MLP * p_mlp, const char * filename);
-MLP *    load_mlp (const char * filename);
+double * mlp_predict (mlp_t * p_mlp, double * p_input);
+void     mlp_save (mlp_t * p_mlp, const char * p_filename);
+mlp_t *  mlp_load (const char * p_filename);
 
 #endif // MLP_H
