@@ -79,6 +79,11 @@ mlp_t * mlp_create (int            num_layers,
 
     initialize_weights(p_mlp);
 
+    p_mlp->p_input_data
+        = calloc(p_mlp->pp_layers[0]->input_size, sizeof(double));
+    p_mlp->p_output_data = calloc(
+        p_mlp->pp_layers[p_mlp->num_layers - 1]->input_size, sizeof(double));
+
     return p_mlp;
 }
 
@@ -102,7 +107,20 @@ void mlp_free (mlp_t * p_mlp)
     }
 
     free(p_mlp->pp_layers);
+    free(p_mlp->p_input_data);
+    free(p_mlp->p_output_data);
     free(p_mlp);
+}
+
+double * mlp_predict (mlp_t * p_mlp, double * p_input)
+{
+    memmove(p_mlp->p_input_data,
+            p_input,
+            p_mlp->pp_layers[0]->input_size * sizeof(double));
+
+    // TODO: perform prediction and save to p_mlp->p_output_data
+
+    return p_mlp->p_output_data;
 }
 
 static void initialize_weights (mlp_t * p_mlp)
