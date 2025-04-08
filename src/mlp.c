@@ -4,7 +4,6 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 static matrix_t * initialize_weights (layer_t * p_layer);
 
@@ -16,6 +15,34 @@ static double     compute_loss (mlp_t *    p_mlp,
                                 matrix_t * p_output,
                                 matrix_t * p_target);
 static void       back_propagation (mlp_t * p_mlp, double loss);
+
+static print_progress_bar(int    current,
+                          int    total,
+                          int    bar_width,
+                          char * p_message)
+{
+    float progress = (float)current / total;
+    int   position = (int)(bar_width * progress);
+
+    printf("\r[");
+    for (int index = 0; index < bar_width; index++)
+    {
+        if (index < position)
+        {
+            printf("=");
+        }
+        else if (index == position)
+        {
+            printf(">");
+        }
+        else
+        {
+            printf(" ");
+        }
+    }
+    printf("] %3d%% (%s)", (int)(progress * 100), p_message);
+    fflush(stdout);
+}
 
 mlp_t * mlp_create (int            num_layers,
                     int *          p_layer_sizes,
@@ -100,12 +127,14 @@ void mlp_train (mlp_t *     p_mlp,
 {
     for (int epoch = 0; epoch < num_epochs; epoch++)
     {
+
         for (int index = 0; index < num_samples; index++)
         {
             matrix_t * p_output = forward_pass(p_mlp, pp_input[index]);
             backward_pass(p_mlp, p_output, pp_target[index]);
             matrix_free(p_output);
         }
+        print_progress_bar(epoch + 1, num_epochs, 100, "training");
     }
 }
 
@@ -163,15 +192,14 @@ static matrix_t * forward_pass (mlp_t * p_mlp, matrix_t * p_input)
 
         matrix_t * p_matrix_1
             = matrix_multiply(p_matrix_current, p_layer->p_weights);
-        matrix_t * p_matrix_2 = matrix_add(p_matrix_1, p_layer->p_biases);
+        p_layer->p_z = matrix_add(p_matrix_1, p_layer->p_biases);
 
         activation_function_t p_function
             = activation_get_function(p_layer->activation_type);
 
-        matrix_t * p_matrix_3 = p_function(p_matrix_2);
+        matrix_t * p_matrix_3 = p_function(p_layer->p_z);
 
         matrix_free(p_matrix_1);
-        matrix_free(p_matrix_2);
 
         if (p_matrix_current != p_input)
         {
@@ -189,6 +217,9 @@ static void backward_pass (mlp_t *    p_mlp,
                            matrix_t * p_target)
 {
     double loss = compute_loss(p_mlp, p_output, p_target);
+
+    // TODO: update weights for output layer from loss
+
     back_propagation(p_mlp, loss);
 }
 
@@ -199,7 +230,16 @@ static double compute_loss (mlp_t *    p_mlp,
     return 0.0;
 }
 
-static void back_propagation (mlp_t * p_mlp, double loss)
+static void back_propagation (mlp_t * p_mlp)
 {
     // TODO: implement backpropagation
+
+    // dA = W_next^T · dZ_next
+    // dZ = dA ⊙ activation'(Z)
+
+    // dW = dZ · A_prev^T
+    // db = dZ
+
+    // W -= lr * dW
+    // b -= lr * db
 }

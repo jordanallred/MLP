@@ -9,6 +9,8 @@ typedef struct
     int          input_size;
     int          output_size;
     matrix_t *   p_weights;
+    matrix_t *   p_delta;
+    matrix_t *   p_z;
     matrix_t *   p_biases;
     activation_t activation_type;
 } layer_t;
@@ -28,11 +30,11 @@ mlp_t *    mlp_create (int            num_layers,
                        double         learning_rate,
                        double         lambda);
 void       mlp_free (mlp_t * p_mlp);
-void mlp_train (mlp_t *     p_mlp,
-                matrix_t ** pp_input,
-                matrix_t ** pp_target,
-                int         num_samples,
-                int         num_epochs);
+void       mlp_train (mlp_t *     p_mlp,
+                      matrix_t ** pp_input,
+                      matrix_t ** pp_target,
+                      int         num_samples,
+                      int         num_epochs);
 matrix_t * mlp_predict (mlp_t * p_mlp, matrix_t * p_input);
 void       mlp_save (mlp_t * p_mlp, const char * p_filename);
 mlp_t *    mlp_load (const char * p_filename);
