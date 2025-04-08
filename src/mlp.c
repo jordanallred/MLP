@@ -7,10 +7,15 @@
 #include <string.h>
 
 static matrix_t * initialize_weights (layer_t * p_layer);
-static void       forward_propagation (mlp_t * p_mlp, double * p_input);
-static double     compute_loss (mlp_t * p_mlp, double * p_target);
-static void       backward_propagation (mlp_t * p_mlp, double * p_target);
-static void       update_parameters (mlp_t * p_mlp);
+
+static matrix_t * forward_pass (mlp_t * p_mlp, matrix_t * p_input);
+static void       backward_pass (mlp_t *    p_mlp,
+                                 matrix_t * p_output,
+                                 matrix_t * p_target);
+static double     compute_loss (mlp_t *    p_mlp,
+                                matrix_t * p_output,
+                                matrix_t * p_target);
+static void       back_propagation (mlp_t * p_mlp, double loss);
 
 mlp_t * mlp_create (int            num_layers,
                     int *          p_layer_sizes,
@@ -66,8 +71,6 @@ mlp_t * mlp_create (int            num_layers,
             = initialize_weights(p_mlp->pp_layers[index]);
         p_mlp->pp_layers[index]->p_biases
             = matrix_create(1, p_mlp->pp_layers[index]->output_size);
-        p_mlp->pp_layers[index]->p_delta
-            = matrix_create(1, p_mlp->pp_layers[index]->output_size);
         p_mlp->pp_layers[index]->activation_type = p_activation_types[index];
     }
 
@@ -82,7 +85,6 @@ void mlp_free (mlp_t * p_mlp)
 
         matrix_free(p_layer->p_weights);
         matrix_free(p_layer->p_biases);
-        matrix_free(p_layer->p_delta);
         free(p_layer);
     }
 
@@ -90,31 +92,27 @@ void mlp_free (mlp_t * p_mlp)
     free(p_mlp);
 }
 
+void mlp_train (mlp_t *     p_mlp,
+                matrix_t ** pp_input,
+                matrix_t ** pp_target,
+                int         num_samples,
+                int         num_epochs)
+{
+    for (int epoch = 0; epoch < num_epochs; epoch++)
+    {
+        for (int index = 0; index < num_samples; index++)
+        {
+            matrix_t * p_output = forward_pass(p_mlp, pp_input[index]);
+            backward_pass(p_mlp, p_output, pp_target[index]);
+            matrix_free(p_output);
+        }
+    }
+}
+
 matrix_t * mlp_predict (mlp_t * p_mlp, matrix_t * p_input)
 {
-    matrix_t * p_matrix_current = p_input;
-
-    for (int index = 0; index < p_mlp->num_layers; index++)
-    {
-        layer_t * p_layer = p_mlp->pp_layers[index];
-
-        matrix_t * p_matrix_1
-            = matrix_multiply(p_matrix_current, p_layer->p_weights);
-        matrix_t * p_matrix_2 = matrix_add(p_matrix_1, p_layer->p_biases);
-
-        activation_function_t p_function
-            = activation_get_function(p_layer->activation_type);
-
-        matrix_t * p_matrix_3 = p_function(p_matrix_2);
-
-        matrix_free(p_matrix_1);
-        matrix_free(p_matrix_2);
-        matrix_free(p_matrix_current);
-
-        p_matrix_current = p_matrix_3;
-    }
-
-    return p_matrix_current;
+    matrix_t * p_prediction = forward_pass(p_mlp, p_input);
+    return p_prediction;
 }
 
 static matrix_t * initialize_weights (layer_t * p_layer)
@@ -153,4 +151,55 @@ static matrix_t * initialize_weights (layer_t * p_layer)
     (void)fclose(p_file);
 
     return p_matrix;
+}
+
+static matrix_t * forward_pass (mlp_t * p_mlp, matrix_t * p_input)
+{
+    matrix_t * p_matrix_current = p_input;
+
+    for (int index = 0; index < p_mlp->num_layers; index++)
+    {
+        layer_t * p_layer = p_mlp->pp_layers[index];
+
+        matrix_t * p_matrix_1
+            = matrix_multiply(p_matrix_current, p_layer->p_weights);
+        matrix_t * p_matrix_2 = matrix_add(p_matrix_1, p_layer->p_biases);
+
+        activation_function_t p_function
+            = activation_get_function(p_layer->activation_type);
+
+        matrix_t * p_matrix_3 = p_function(p_matrix_2);
+
+        matrix_free(p_matrix_1);
+        matrix_free(p_matrix_2);
+
+        if (p_matrix_current != p_input)
+        {
+            matrix_free(p_matrix_current);
+        }
+
+        p_matrix_current = p_matrix_3;
+    }
+
+    return p_matrix_current;
+}
+
+static void backward_pass (mlp_t *    p_mlp,
+                           matrix_t * p_output,
+                           matrix_t * p_target)
+{
+    double loss = compute_loss(p_mlp, p_output, p_target);
+    back_propagation(p_mlp, loss);
+}
+
+static double compute_loss (mlp_t *    p_mlp,
+                            matrix_t * p_output,
+                            matrix_t * p_target)
+{
+    return 0.0;
+}
+
+static void back_propagation (mlp_t * p_mlp, double loss)
+{
+    // TODO: implement backpropagation
 }

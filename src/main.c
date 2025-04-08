@@ -1,5 +1,7 @@
 #include "mlp.h"
 
+#include <stdlib.h>
+
 int main (void)
 {
 
@@ -12,7 +14,6 @@ int main (void)
     mlp_t * p_mlp = mlp_create(
         num_layers, layer_sizes, activation_types, learning_rate, lambda);
 
-
     matrix_t * p_input = matrix_create(1, 100);
 
     for (int index = 0; index < p_input->columns; index++)
@@ -20,13 +21,27 @@ int main (void)
         p_input->pp_data[0][index] = index;
     }
 
-    matrix_t * p_output = mlp_predict(p_mlp, p_input);
+    matrix_t * p_target = matrix_create(1, 10);
 
-    matrix_visualize(p_output);
+    for (int index = 0; index < p_target->columns; index++)
+    {
+        p_target->pp_data[0][index] = index;
+    }
 
-    matrix_free(p_output);
+    matrix_t ** pp_input = calloc(1, sizeof(matrix_t *));
+    pp_input[0]          = p_input;
+
+    matrix_t ** pp_target = calloc(1, sizeof(matrix_t *));
+    pp_target[0]          = p_target;
+
+    mlp_train(p_mlp, pp_input, pp_target, 1, 100);
 
     mlp_free(p_mlp);
+
+    matrix_free(p_input);
+    matrix_free(p_target);
+    free(pp_input);
+    free(pp_target);
 
     return 0;
 }

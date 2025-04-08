@@ -141,9 +141,10 @@ void matrix_visualize (matrix_t * p_matrix)
 matrix_t * matrix_copy (matrix_t * p_input)
 {
     matrix_t * p_output = calloc(1, sizeof(matrix_t));
-    p_output->rows = p_input->rows;
-    p_output->columns = p_input->columns;
-    p_output->pp_data = copy_2d_array(p_input->pp_data, p_output->rows, p_output->columns);
+    p_output->rows      = p_input->rows;
+    p_output->columns   = p_input->columns;
+    p_output->pp_data
+        = copy_2d_array(p_input->pp_data, p_output->rows, p_output->columns);
 
     return p_output;
 }
