@@ -1,16 +1,19 @@
 #ifndef ACTIVATION_H
 #define ACTIVATION_H
 
-double sigmoid (double x);
-double sigmoid_derivative (double x);
-double relu (double x);
-double relu_derivative (double x);
-double tanh_activation (double x);
-double tanh_derivative (double x);
-void   softmax (double * input, double * output, int size);
-void   softmax_derivative (double * output,
-                           double * target,
-                           double * delta,
-                           int      size);
+#include "matrix.h"
 
-#endif //ACTIVATION_H
+typedef enum
+{
+    SIGMOID,
+    RELU,
+    TANH,
+    SOFTMAX,
+    LINEAR
+} activation_t;
+
+typedef matrix_t * (*activation_function_t)(matrix_t * p_input);
+
+activation_function_t activation_get_function (activation_t activation);
+
+#endif // ACTIVATION_H

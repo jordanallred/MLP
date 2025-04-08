@@ -16,17 +16,18 @@ set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
 
 # Add math library
 find_library(MATH_LIBRARY m)
-if(MATH_LIBRARY)
+if (MATH_LIBRARY)
     set(EXTRA_LIBS ${MATH_LIBRARY})
-endif()
+endif ()
 
 # Add include directories
-include_directories(${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Source files
 set(SOURCES
         src/mlp.c
-        src/util.c
+        src/matrix.c
+        src/activation.c
 )
 
 # Create the main executable
